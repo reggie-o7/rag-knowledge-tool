@@ -18,7 +18,6 @@ print("Vector length:", len(vectors[0]))
 
 
 def cosine_similarity(a, b):
-    # TODO: implement the formula. Hint: np.dot and np.linalg.norm
     return (np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 # print(cosine_similarity(np.array([3, 4]), np.array([4, 3])))
