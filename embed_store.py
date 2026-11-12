@@ -17,9 +17,10 @@ BATCH_SIZE = 50
 INDEX_DIR = Path("index")
 MAX_RETRIES = 5
 BASE_DELAY = 15
+RETRYABLE_CODES = {429, 500, 503}
 
 def embed_batch(batch, task_type):
-    """Embed one batch, retrying with exponential backoff if rate-limited."""
+    """Embed one batch, retrying with exponential backoff on temporary API errors."""
     delay = BASE_DELAY
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -28,13 +29,14 @@ def embed_batch(batch, task_type):
                 contents=batch,
                 config=types.EmbedContentConfig(task_type=task_type),
             )
-        except errors.ClientError as e:
-            if e.code != 429 or attempt == MAX_RETRIES:
+        except errors.APIError as e:
+            if e.code not in RETRYABLE_CODES or attempt == MAX_RETRIES:
                 raise
-            print(f"Rate limited (attempt {attempt}/{MAX_RETRIES}). Waiting {delay}s...")
+            print(f"API error {e.code} (attempt {attempt}/{MAX_RETRIES}). Waiting {delay}s...")
             time.sleep(delay)
             delay *= 2
     raise RuntimeError("embed_batch: retries exhausted")
+
 
 def embed_texts(texts, task_type):
     """Embed a list of strings in batches. Return a NumPy array, one row per text."""
