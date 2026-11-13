@@ -39,7 +39,9 @@ def generate_with_retry(prompt, config=None, model=GEN_MODEL):
         except errors.APIError as e:
             if e.code not in RETRYABLE_CODES or attempt == MAX_RETRIES:
                 raise
-            print(f"API error {e.code} (attempt {attempt}/{MAX_RETRIES}). Waiting {delay}s...")
+            print(
+                f"API error {e.code} (attempt {attempt}/{MAX_RETRIES}). Waiting {delay}s..."
+            )
             time.sleep(delay)
             delay *= 2
     raise RuntimeError("generate_with_retry: retries exhausted")

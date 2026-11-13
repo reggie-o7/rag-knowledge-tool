@@ -14,16 +14,18 @@ def load_index():
     vectors = np.load(INDEX_DIR / "embeddings.npy")
     return chunks, vectors
 
+
 def cosine_similarity(a, b):
     """Return the cosine similarity between two vectors (1 = same direction, 0 = unrelated)."""
-    return (np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
 
 def rank(q, chunks, vectors, k=TOP_K):
     """Return the k chunks most similar to an already-embedded question vector q."""
     scores = []
     for row in vectors:
         scores.append(cosine_similarity(q, row))
-    
+
     scores = np.array(scores)
 
     top_pos = np.argsort(scores)[::-1][:k]
@@ -31,18 +33,22 @@ def rank(q, chunks, vectors, k=TOP_K):
     results = []
 
     for idx in top_pos:
-        results.append({
-            "id": chunks[idx]["id"],
-            "text": chunks[idx]["text"],
-            "score": scores[idx],
-        })
+        results.append(
+            {
+                "id": chunks[idx]["id"],
+                "text": chunks[idx]["text"],
+                "score": scores[idx],
+            }
+        )
 
     return results
+
 
 def search(question, chunks, vectors, k=TOP_K):
     """Embed a question, then return its top k chunks."""
     q = embed_texts([question], "RETRIEVAL_QUERY")[0]
     return rank(q, chunks, vectors, k)
+
 
 if __name__ == "__main__":
     chunks, vectors = load_index()

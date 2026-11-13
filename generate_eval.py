@@ -8,8 +8,8 @@ from answer import generate_with_retry
 from search import load_index
 
 NUM_CANDIDATES = 50
-MIN_WORDS = 100      # skip short leftover chunks at the end of files
-SEED = 42            # same random picks every run
+MIN_WORDS = 100  # skip short leftover chunks at the end of files
+SEED = 42  # same random picks every run
 OUTPUT_FILE = "eval_candidates.json"
 EVAL_MODEL = "gemini-3.5-flash-lite"
 
@@ -52,9 +52,11 @@ def generate_candidate(chunk):
         raise RuntimeError(f"No text returned for {chunk['id']}")
     return json.loads(response.text)
 
+
 def evidence_is_valid(evidence, chunk_text):
     """Return True if the evidence phrase really appears in the chunk text."""
     return normalize(evidence) in normalize(chunk_text)
+
 
 def load_candidates(path):
     """Load previously saved candidates, or return an empty list if none exist yet."""
@@ -69,6 +71,7 @@ def save_candidates(candidates, path):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(candidates, f, ensure_ascii=False, indent=2)
 
+
 if __name__ == "__main__":
     chunks, _ = load_index()
     picked = pick_chunks(chunks, NUM_CANDIDATES, MIN_WORDS, SEED)
@@ -82,15 +85,19 @@ if __name__ == "__main__":
             continue
         cand = generate_candidate(chunk)
         if evidence_is_valid(cand["evidence"], chunk["text"]):
-            candidates.append({
-                "question": cand["question"],
-                "evidence": [cand["evidence"]],
-                "source_chunk": chunk["id"],
-            })
+            candidates.append(
+                {
+                    "question": cand["question"],
+                    "evidence": [cand["evidence"]],
+                    "source_chunk": chunk["id"],
+                }
+            )
             save_candidates(candidates, OUTPUT_FILE)
             print(f"[{i}/{len(picked)}] OK   {cand['question']}")
         else:
             rejected += 1
             print(f"[{i}/{len(picked)}] BAD  evidence not found in {chunk['id']}")
 
-    print(f"\nTotal saved: {len(candidates)}, rejected this run: {rejected}. File: {OUTPUT_FILE}")
+    print(
+        f"\nTotal saved: {len(candidates)}, rejected this run: {rejected}. File: {OUTPUT_FILE}"
+    )

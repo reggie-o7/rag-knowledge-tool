@@ -32,7 +32,6 @@ def hit_at_k(hit_ranks, k):
         if hit != None and hit <= k:
             hits += 1
     return hits / len(hit_ranks)
-    
 
 
 if __name__ == "__main__":
