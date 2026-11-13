@@ -1,4 +1,5 @@
 .venv/
 .env
-index/
+index*/
+eval_candidates.json
 __pycache__/

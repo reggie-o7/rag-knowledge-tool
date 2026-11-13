@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import errors, types
 
-from chunker import build_chunks
+from chunker import CHUNK_SIZE, build_chunks
 
 load_dotenv()
 client = genai.Client()
 
 MODEL = "gemini-embedding-001"
 BATCH_SIZE = 50
-INDEX_DIR = Path("index")
+INDEX_DIR = Path(f"index_{CHUNK_SIZE}")
 MAX_RETRIES = 5
 BASE_DELAY = 15
 RETRYABLE_CODES = {429, 500, 503}
