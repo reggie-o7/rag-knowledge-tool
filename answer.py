@@ -46,7 +46,7 @@ def generate_with_retry(prompt, config=None, model=GEN_MODEL):
 
 
 def answer(question, chunks, vectors):
-    """Retrieve the top chunks for a question and have Gemini answer from them."""
+    """Retrieve the top chunks, have Gemini answer from them, and return the answer with its sources."""
     results = search(question, chunks, vectors)
     prompt = build_prompt(question, results)
     response = generate_with_retry(prompt)
@@ -54,7 +54,11 @@ def answer(question, chunks, vectors):
     if response.text is None:
         raise RuntimeError(f"Gemini returned no text for question: {question!r}")
 
-    return response.text
+    sources = []
+    for r in results:
+        sources.append({"id": r["id"], "score": float(r["score"])})
+
+    return {"answer": response.text, "sources": sources}
 
 
 if __name__ == "__main__":
@@ -69,5 +73,5 @@ if __name__ == "__main__":
 
     for q in questions:
         print("Q:", q)
-        print("A:", answer(q, chunks, vectors))
+        print("A:", answer(q, chunks, vectors)["answer"])
         print()
