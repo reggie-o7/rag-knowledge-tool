@@ -17,22 +17,12 @@ POST /ask  {"question": "When did Messi start playing for Miami?"}
 
 ## How it works
 
-```mermaid
-flowchart LR
-    subgraph Indexing ["Indexing (run once)"]
-        A[6 text documents] --> B[Clean + chunk<br/>300 words, 50 overlap]
-        B --> C[Embed chunks<br/>gemini-embedding-001]
-        C --> D[(Index<br/>chunks.json + embeddings.npy)]
-    end
-    subgraph Querying ["Querying (every question)"]
-        Q[Question] --> E[Embed question]
-        E --> F[Cosine similarity<br/>vs. all chunks]
-        D --> F
-        F --> G[Top 3 chunks]
-        G --> H[Grounded prompt<br/>gemini-3.5-flash]
-        H --> I[Answer + citations]
-    end
-```
+The system has two parts:
+
+- **Indexing (done once):** documents → chunks → embeddings → saved to disk
+- **Answering (every question):** question → embedding → find the 3 closest chunks → Gemini writes a cited answer from them
+
+In more detail:
 
 1. **Chunking**: documents are cleaned (Wikipedia citation markers removed) and split into 300-word chunks with a 50-word overlap, so facts near a boundary appear whole in at least one chunk.
 2. **Embedding**: each chunk is embedded once with `gemini-embedding-001` (task type `RETRIEVAL_DOCUMENT`, 3072 dimensions) and saved to disk, so queries never re-embed the corpus.
